@@ -1,6 +1,19 @@
-from django.apps import AppConfig
+import os
+from django.core.asgi import get_asgi_application
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'chatBackend.settings')
 
-class ChatAppConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'chat_app'
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter , URLRouter
+from chat_app import routing
+
+application = ProtocolTypeRouter(
+	{
+		"http" : get_asgi_application() ,
+		"websocket" : AuthMiddlewareStack(
+			URLRouter(
+				routing.websocket_urlpatterns
+			)
+		)
+	}
+)
